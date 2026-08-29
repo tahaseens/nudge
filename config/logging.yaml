@@ -1,0 +1,9 @@
+logging:
+  runs_root: runs
+  directory_name: "<timestamp>_<scenario_id>"
+  manifest_file: manifest.json
+  telemetry_file: telemetry.csv
+  events_file: events.jsonl
+  rosbag_directory: rosbag2
+  rosbag_topics: null  # TODO: finalize topic selection before experiments.
+  flush_interval_ms: null  # TODO: balance durability and write overhead.

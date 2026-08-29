@@ -1,0 +1,35 @@
+# Stable CorrectionType values used for optional explicit labels.
+uint8 CORRECTION_UNKNOWN=0
+uint8 CORRECTION_MOTION=1
+uint8 CORRECTION_PLAN=2
+uint8 CORRECTION_GOAL=3
+uint8 CORRECTION_AUTHORITY=4
+
+# Stable OperatorContext values.
+uint8 OPERATOR_ADJACENT=0
+uint8 OPERATOR_ONBOARD=1
+uint8 OPERATOR_REMOTE=2
+
+std_msgs/Header header
+string event_id
+bool active
+builtin_interfaces/Duration duration
+geometry_msgs/Twist human_command
+float32 initial_direction_rad
+float32 mean_direction_rad
+float32 initial_magnitude
+float32 peak_magnitude
+float32 autonomy_disagreement_rad
+nav_msgs/Odometry robot_state
+string planner_state
+string active_plan_id
+nudge_interfaces/RobotGoalState robot_assumed_goal
+uint8 operator_context
+uint32 repeated_interventions
+bool repeats_after_route_adjustment
+float32 distance_to_decision_point_m
+builtin_interfaces/Duration time_to_decision_point
+builtin_interfaces/Duration time_since_previous_correction
+float32 alternate_goal_alignment_rad
+bool has_explicit_label
+uint8 explicit_label

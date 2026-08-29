@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Nudge run manifest",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "run_id", "timestamp", "git_commit", "scenario_id", "control_condition",
+    "operator_context", "robot_assumed_goal", "ground_truth_goal",
+    "intended_correction_type", "objective_weights", "confidence_thresholds",
+    "controller_config", "map_id"
+  ],
+  "properties": {
+    "run_id": {"type": ["string", "null"]},
+    "timestamp": {"type": ["string", "null"]},
+    "git_commit": {"type": ["string", "null"]},
+    "scenario_id": {"type": ["string", "null"]},
+    "control_condition": {
+      "enum": ["MANUAL", "AUTO", "FIXED_BLEND", "NUDGE_EXPLICIT", "NUDGE_IMPLICIT", null]
+    },
+    "operator_context": {"enum": ["ADJACENT", "ONBOARD", "REMOTE", null]},
+    "robot_assumed_goal": {"type": ["object", "string", "null"]},
+    "ground_truth_goal": {"type": ["object", "string", "null"]},
+    "intended_correction_type": {
+      "enum": ["MOTION", "PLAN", "GOAL", "AUTHORITY", "UNKNOWN", null]
+    },
+    "objective_weights": {"type": ["object", "null"]},
+    "confidence_thresholds": {"type": ["object", "null"]},
+    "controller_config": {"type": ["object", "null"]},
+    "map_id": {"type": ["string", "null"]}
+  }
+}

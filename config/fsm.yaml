@@ -1,0 +1,5 @@
+fsm:
+  human_dominant_repeat_limit: null  # TODO: candidate worksheet value: 3.
+  recovery_ms: null  # TODO: candidate range: 1000-2000 ms.
+  estop_reset_policy: null  # TODO: safety decision required.
+  complete_restart_policy: null  # TODO: lifecycle decision required.

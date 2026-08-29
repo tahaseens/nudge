@@ -1,0 +1,7 @@
+std_msgs/Header header
+float32 autonomy_confidence
+bool autonomy_confidence_valid
+float32 correction_confidence
+bool correction_confidence_valid
+float32 environmental_confidence
+bool environmental_confidence_valid

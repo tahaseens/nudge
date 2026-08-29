@@ -1,0 +1,319 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{booktabs}
+
+\title{Nudge v0.1 System Specification}
+\author{Tahaseen Shaik}
+\date{Foundation revision: August 29, 2026}
+
+\begin{document}
+\maketitle
+
+\section{Status and authority}
+This document is the authoritative design source for Nudge v0.1. The target
+completion date is September 16, 2026. The present revision specifies the
+repository foundation and interface contracts; it does not assert validated
+research hypotheses or experimental results. Items marked TODO are unresolved
+and shall not be silently assigned implementation values.
+
+\section{Purpose and scope}
+Nudge is a ROS~2 Jazzy/C++ corrective shared-autonomy system for a USAR-inspired
+differential-drive UGV operating in partially known environments. A human
+operator provides sparse corrections through an Xbox controller. Nudge tests
+whether input communicates disagreement at four semantic levels:
+\texttt{MOTION}, \texttt{PLAN}, \texttt{GOAL}, and \texttt{AUTHORITY}.
+\texttt{UNKNOWN} represents an uninterpreted correction.
+
+Version 0.1 compares an explicit labeling condition with an implicit heuristic
+condition. Both conditions shall publish the same interpretation contract and
+use the same downstream assistance, autonomy, arbitration, safety, and logging
+architecture. Learned classification, reinforcement learning, camera
+perception, natural-language interaction, and physical-robot dependencies are
+out of scope for this revision.
+
+\section{Research and application context}
+The primary research question is how an autonomous robot should interpret and
+respond to sparse physical corrective input. Secondary questions concern
+semantic-level inference, legibility, the roles of autonomy and interpretation
+confidence, interaction history, unequal environmental knowledge, operator
+location, and explicit-versus-implicit accuracy, effort, and performance.
+
+The following are provisional hypotheses, not established claims: short
+corrections may indicate motion adjustments; repeated corrections after route
+changes may indicate planning or objective mismatch; strong command
+disagreement may justify more human authority; repeated unresolved disagreement
+shall force human-dominant control regardless of confidence; confidence sources
+should remain separate; and joint uncertainty may require conservative
+exploration rather than control transfer alone.
+
+The application is USAR-inspired reconnaissance in a partially mapped damaged
+structure. Route selection is represented conceptually by
+\[
+J(\tau)=w_gJ_{goal}+w_rJ_{risk}+w_tJ_{traversability}+w_eJ_{efficiency}
+       +w_cJ_{context}+w_nJ_{nudge}.
+\]
+Terms and weights may be deterministic and configuration-driven in v0.1, but
+their definitions and values are TODO. A nudge updates preferences from the
+current state. A global replan begins at the current robot pose and retains the
+current assumed goal.
+
+Nudge is an engineering and HRI prototype grounded in prior shared-control,
+goal-inference, corrective-interaction, policy-blending, and confidence-based
+arbitration work. Its design directions shall not be described as validated
+novelty before evaluation and literature review support that claim.
+
+\section{Architecture constraints}
+The core stack shall be simulator-agnostic and shall not call Gazebo-specific
+APIs. Gazebo integration belongs in \texttt{nudge\_sim}; a future Isaac Sim
+backend and physical UGV shall be replaceable backends. Standard ROS~2
+interfaces shall be used when their semantics suffice. The safety layer shall
+remain independent of both human and autonomous command generation. Operator
+context shall be represented and logged from v0.1 even while behavior remains
+context-independent.
+
+\section{Enumerated contracts}
+The following numeric encodings are stable interface values.
+
+\begin{longtable}{lll}
+\toprule
+Concept & Name & Value \\
+\midrule
+\endhead
+Correction type & UNKNOWN, MOTION, PLAN, GOAL, AUTHORITY & 0, 1, 2, 3, 4 \\
+Interpretation source & EXPLICIT, HEURISTIC & 0, 1 \\
+Operator context & ADJACENT, ONBOARD, REMOTE & 0, 1, 2 \\
+Authority state & AUTONOMOUS, SHARED, HUMAN\_DOMINANT & 0, 1, 2 \\
+Lifecycle state & INIT, READY, RUNNING, PAUSED, COMPLETE, ESTOP & 0, 1, 2, 3, 4, 5 \\
+\bottomrule
+\end{longtable}
+
+\section{ROS interface fields}
+All state and event messages carry \texttt{std\_msgs/Header} unless they are
+embedded records. Identifiers are strings to avoid selecting a UUID policy in
+v0.1.
+
+\subsection{CorrectionEvent}
+Fields: header; \texttt{event\_id}; \texttt{active};
+\texttt{geometry\_msgs/Twist human\_command}; normalized
+\texttt{magnitude}; \texttt{duration\_ms}; optional explicit semantic label
+encoded as \texttt{explicit\_label} plus \texttt{has\_explicit\_label}; and
+\texttt{operator\_context}. Magnitude normalization is TODO and shall be
+configured rather than assumed.
+
+\subsection{CorrectionInterpretation}
+Fields: header; \texttt{correction\_type}; \texttt{confidence};
+\texttt{interpretation\_source}; \texttt{matched\_heuristic\_rule\_id}; and
+the complete \texttt{source\_event}. Because the wire field is unsigned,
+zero denotes no heuristic match (including explicit interpretations), while
+H01--H99 map to their numeric suffix. Confidence calibration and UNKNOWN
+handling are TODO.
+
+\subsection{AssistanceState}
+Fields: header; \texttt{authority\_state}; \texttt{lifecycle\_state};
+\texttt{human\_weight}; \texttt{autonomy\_weight};
+\texttt{safety\_override\_active}; \texttt{transition\_reason}; and
+\texttt{unresolved\_disagreement\_count}. Blend-weight policy is TODO; the
+fields make the applied arbitration observable.
+
+\subsection{ConfidenceState}
+Fields: header; \texttt{autonomy\_confidence};
+\texttt{correction\_confidence}; and per-value validity flags. The confidence
+definition, estimator, calibration, and update rate are TODO.
+
+\subsection{OperatorState}
+Fields: header; \texttt{operator\_context}; \texttt{debug\_mode}; cumulative
+\texttt{correction\_count}; \texttt{unresolved\_disagreement\_count}; and
+\texttt{cumulative\_intervention\_ms}. Debug mode is strictly an observability
+flag and shall not transition the authority FSM.
+
+\subsection{RobotGoalState}
+Fields: header; \texttt{has\_assumed\_goal};
+\texttt{geometry\_msgs/PoseStamped assumed\_goal}; \texttt{goal\_id}; and
+monotonic \texttt{revision}. Goal selection behavior is out of scope.
+
+\section{Controller contract}
+Axis and button IDs shall be configurable. The left stick provides corrective
+motion. LT holds or increases human authority; RT yields or increases autonomous
+authority. A accepts/confirms, B rejects the current plan, X pauses, and Y
+requests a global replan from the current pose to the current assumed goal. The
+D-pad supplies labels in Explicit Semantic Nudge mode. View/Back toggles debug
+mode. Menu/Start requests emergency stop. Platform-specific axis polarity and
+trigger representation are TODO configuration decisions.
+
+The proposed explicit mapping is D-pad Up to MOTION, Right to PLAN, Down to
+GOAL, and Left to AUTHORITY. It remains configurable pending usability review.
+
+\section{Heuristic worksheet contract}
+The implicit condition is deterministic and rule-based in v0.1. It may use
+duration, normalized magnitude, human-autonomy directional disagreement,
+decision-point context, repetition, and alignment with alternate goals. Raw
+features shall remain logged when rules discretize them. IDs H01--H02 are
+reserved for candidate MOTION rules, H03--H04 for PLAN, H05--H06 for GOAL,
+H07--H08 for AUTHORITY, and H09 for UNKNOWN. All remain disabled until exact
+conditions are reviewed.
+
+Candidate features include
+\[
+m_H=\sqrt{x_H^2+y_H^2},\quad m_H\in[0,1],
+\qquad
+\Delta\theta=\cos^{-1}\left(
+\frac{u_H\cdot u_A}{\lVert u_H\rVert\lVert u_A\rVert}\right)
+\]
+for nonzero command vectors. Zero-vector handling is TODO. The source worksheet
+lists candidate values only: deadzone 0.08--0.10, start 0.18--0.20, release
+0.08--0.10, release timeout 150~ms, short maximum 400~ms, long minimum
+1000~ms, strong magnitude 0.75, disagreement 90--120 degrees, repeat window
+2500--4000~ms, repeat limit 3, branch radius 1.5~m, alternate-goal alignment
+30--45 degrees, high correction confidence 0.75, autonomy return 0.60--0.75,
+and recovery 1000--2000~ms. YAML records them as comments while runtime values
+remain \texttt{null}.
+
+\section{State machines}
+Authority states are \texttt{AUTONOMOUS}, \texttt{SHARED}, and
+\texttt{HUMAN\_DOMINANT}. Adjacent transitions are allowed in both directions;
+direct \texttt{HUMAN\_DOMINANT} to \texttt{AUTONOMOUS} is forbidden. Repeated
+unresolved disagreement forces \texttt{HUMAN\_DOMINANT} independently of
+correction confidence. Eventual return to autonomy is confidence-based and must
+pass through \texttt{SHARED}. Threshold and timing values are TODO YAML values.
+
+Lifecycle states are \texttt{INIT}, \texttt{READY}, \texttt{RUNNING},
+\texttt{PAUSED}, \texttt{COMPLETE}, and \texttt{ESTOP}. Valid nominal
+transitions are INIT--READY, READY--RUNNING, RUNNING--PAUSED,
+PAUSED--RUNNING, and RUNNING--COMPLETE. ESTOP is reachable from any state.
+Reset/recovery from ESTOP and restart behavior after COMPLETE are deliberately
+TODO safety decisions, so the foundation FSM rejects them.
+
+\section{Control, confidence, and assistance}
+Planned conditions are MANUAL, AUTO, FIXED\_BLEND, NUDGE\_EXPLICIT, and
+NUDGE\_IMPLICIT. Manual applies $u=u_H$, autonomous applies $u=u_A$, and fixed
+blend applies $u=\alpha u_H+(1-\alpha)u_A$ for configured $\alpha$. A Nudge
+policy may select a discrete action from autonomy confidence $C_A$, correction
+confidence $C_C$, spatial environmental confidence $C_E$, observable operator
+history $M_H$, and state $s$; it is not restricted to one blend value. Repeated
+disagreement always selects human-dominant authority, and the safety layer
+overrides unsafe human or autonomous output.
+
+Candidate autonomy-confidence inputs include route-cost separation,
+feasibility, obstacle clearance, environmental knowledge, and goal ambiguity.
+Candidate correction-confidence inputs include duration, magnitude, direction
+consistency, decision timing, repetition, command disagreement, and
+alternate-goal alignment. Definitions, normalization, calibration, decay, and
+persistence are TODO. Environmental confidence remains spatial,
+$C_E(x,y)\in[0,1]$; future work may separate robot and human knowledge as
+$C_{E,R}(x,y)$ and $C_{E,H}(x,y)$.
+
+\section{Operator, environment, and observability}
+The operator model records observable behavior rather than subjective mental
+state: intervention count/frequency, mean duration/magnitude, consistency,
+response latency, autonomy rejection, task success, and preferred assistance.
+In v0.1 these values are primarily logged and operator context does not change
+assistance. Candidate epistemic states are known safe, known unsafe, robot
+unknown/human known, robot known/human unknown, and jointly unknown; responses
+to them are not yet implemented.
+
+Debug output should expose lifecycle and authority, assumed goal, global and
+local plans, human/autonomous/executed commands, separate confidence values,
+predicted and explicit labels, objective weights, active nudge cost, recent
+disagreement, and matched rule ID. Debug mode remains authority-neutral.
+
+\section{ROS package and topic boundaries}
+The packages are \texttt{nudge\_interfaces}, \texttt{nudge\_ugv\_description},
+\texttt{nudge\_input}, \texttt{nudge\_corrections},
+\texttt{nudge\_autonomy}, \texttt{nudge\_arbitration},
+\texttt{nudge\_operator}, \texttt{nudge\_environment},
+\texttt{nudge\_logging}, \texttt{nudge\_sim}, and
+\texttt{nudge\_bringup}. Candidate topics are \texttt{/joy},
+\texttt{/human/cmd}, \texttt{/autonomy/cmd},
+\texttt{/autonomy/confidence}, \texttt{/environment/confidence},
+\texttt{/correction/event}, \texttt{/correction/interpretation},
+\texttt{/operator/state}, \texttt{/robot/assumed\_goal},
+\texttt{/assistance/state}, and the final safe \texttt{/cmd\_vel}.
+
+\section{Configuration}
+Controller mapping and input filtering, event detection, classifier thresholds,
+confidence thresholds, FSM thresholds, and logging options shall live in YAML.
+Unfinalized values shall be represented by YAML \texttt{null} with a TODO
+comment. Production nodes shall validate required parameters before entering
+READY rather than substituting hidden defaults.
+
+\section{Robot description}
+The nominal \texttt{nudge\_ugv} is a parameterized differential-drive robot
+with an approximately 0.45 by 0.32 by 0.16~m body, 11~kg nominal body mass,
+0.08~m wheel radius, 0.30~m wheel separation, rear caster, 0.8~m/s maximum
+linear speed, 1.5~rad/s maximum angular speed, 2D LiDAR, and optional IMU. These
+are engineering scaffold values, not experimental findings. The TF chain is
+map--odom--base\_footprint--base\_link with wheel, caster, lidar, and IMU child
+links. Dynamic map/odom transforms are supplied by localization/navigation, not
+the URDF.
+
+\section{Logging contract}
+Each run directory is named \texttt{<timestamp>\_<scenario\_id>} and contains
+\texttt{manifest.json}, \texttt{telemetry.csv}, \texttt{events.jsonl}, and
+\texttt{rosbag2/}. Control conditions are MANUAL, AUTO, FIXED\_BLEND,
+NUDGE\_EXPLICIT, and NUDGE\_IMPLICIT. Required manifest fields are run ID,
+timestamp, git commit, scenario ID, control condition, operator context, robot
+assumed goal, ground-truth goal, intended correction type, objective weights,
+confidence thresholds, controller configuration, and map ID.
+
+Event types are CORRECTION\_START, CORRECTION\_END,
+CORRECTION\_CLASSIFIED, PLAN\_COST\_UPDATED, GOAL\_ASSUMPTION\_CHANGED,
+GLOBAL\_REPLAN, AUTHORITY\_TRANSITION, REPEATED\_DISAGREEMENT,
+UNKNOWN\_REGION\_ENTERED, SAFETY\_OVERRIDE, and TASK\_COMPLETE. Classified
+correction records additionally preserve matched heuristic rule ID, optional
+explicit label, inferred label, correction confidence, operator context,
+robot assumed goal, and objective weights before and after.
+
+Telemetry includes time, robot pose/velocity, human/autonomous/executed
+commands, all three confidence sources, authority state, assumed goal, active
+plan ID, and the human-input-active flag. The format should remain compatible
+with future interaction flight-recorder work.
+
+\section{Safety, scenarios, and evaluation}
+The independent safety filter has final authority, including over human input.
+Candidate constraints include velocity, acceleration, clearance, restricted
+regions, emergency stop, and stale-command timeout; exact values and reset
+behavior require review.
+
+Initial scenarios isolate local motion correction, route rejection, goal
+correction, authority takeover, low environmental confidence, and optionally
+joint uncertainty. Controlled scenario metadata supplies semantic ground truth
+and operator instruction; the implicit classifier shall never receive that
+label.
+
+Candidate metrics include completion time, path length/cost, human input,
+intervention/route-update/replan counts, takeover frequency, success,
+classification error/accuracy, unsafe states, autonomy utilization, and time in
+each authority state. The explicit/implicit comparison should at least examine
+accuracy, completion time, effort, intervention count, unnecessary authority
+transitions, and incorrect persistent route/goal changes. Human-subject metrics
+are deferred pending a reviewed study design.
+
+\section{Implementation priorities and scope risks}
+The planned sequence is robot/simulator/Nav2 baseline, controller,
+manual/auto/fixed-blend baselines, FSMs, event extraction, explicit semantics,
+worksheet finalization, heuristic interpretation, current-state objective
+updates, confidence, logging/debugging, scenarios/ground truth, and evaluation.
+This foundation implements only repository structure, interfaces,
+configuration, minimal FSMs, robot description, logging schema, and tests.
+
+Scope risks include excessive simulation fidelity, learned inference before
+deterministic baselines, treating heuristics as findings, conflating observable
+behavior with subjective confidence, category proliferation, uncontrolled
+environment-uncertainty scope, premature hardware integration, and Gazebo
+coupling. Later versions may add learned interpretation, persistent adaptation,
+knowledge asymmetry, richer legibility, Isaac Sim, physical deployment,
+operator-context studies, human-subject evaluation, and flight-recorder or
+explanation integration.
+
+\section{Open design decisions}
+TODO items include all heuristic and confidence thresholds, controller device
+IDs/polarities, magnitude normalization, objective definitions and weights,
+confidence estimators and calibration, UNKNOWN behavior, repeated-disagreement
+resolution semantics, safety reset from ESTOP, COMPLETE restart semantics,
+scenario design, evaluation metrics, and experimental protocol. These require
+explicit decisions in later revisions.
+
+\end{document}

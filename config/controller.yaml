@@ -1,0 +1,32 @@
+# Platform-specific Xbox mappings and polarities must be verified on the target
+# ROS 2/SDL driver before these TODOs are resolved.
+input:
+  deadzone: null  # TODO: finalize; specification candidate range is 0.08-0.10.
+  filter_alpha: null  # TODO: select a filter, or explicitly disable filtering.
+  axes:
+    left_x: null
+    left_y: null
+    left_trigger: null
+    right_trigger: null
+    dpad_x: null
+    dpad_y: null
+  axis_polarity:
+    left_x: null
+    left_y: null
+    left_trigger: null
+    right_trigger: null
+    dpad_x: null
+    dpad_y: null
+  buttons:
+    accept_a: null
+    reject_plan_b: null
+    pause_x: null
+    global_replan_y: null
+    debug_view: null
+    estop_menu: null
+
+explicit_semantic_mapping:
+  dpad_up: MOTION
+  dpad_right: PLAN
+  dpad_down: GOAL
+  dpad_left: AUTHORITY

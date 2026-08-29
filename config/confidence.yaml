@@ -1,0 +1,6 @@
+confidence:
+  correction_high: null  # TODO: candidate worksheet value: 0.75.
+  autonomy_return: null  # TODO: candidate range: 0.60-0.75.
+  correction_estimator: null  # TODO: definition and calibration are unresolved.
+  autonomy_estimator: null  # TODO: definition and calibration are unresolved.
+  environmental_representation: null  # TODO: spatial representation unresolved.

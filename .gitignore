@@ -1,0 +1,43 @@
+# ROS 2 / colcon
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+
+# Generated experiment data
+runs/
+*.db3
+*.mcap
+
+# C/C++
+*.o
+*.obj
+*.so
+*.dll
+*.dylib
+*.a
+*.lib
+compile_commands.json
+.cache/
+
+# Python tooling
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+
+# Editors and operating systems
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# LaTeX generated files
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc

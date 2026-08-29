@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Nudge semantic event",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["timestamp", "event_type"],
+  "properties": {
+    "timestamp": {"type": "string"},
+    "event_type": {
+      "enum": [
+        "CORRECTION_START", "CORRECTION_END", "CORRECTION_CLASSIFIED",
+        "PLAN_COST_UPDATED", "GOAL_ASSUMPTION_CHANGED", "GLOBAL_REPLAN",
+        "AUTHORITY_TRANSITION", "REPEATED_DISAGREEMENT", "UNKNOWN_REGION_ENTERED",
+        "SAFETY_OVERRIDE", "TASK_COMPLETE"
+      ]
+    },
+    "matched_heuristic_rule_id": {"type": ["integer", "null"], "minimum": 0},
+    "explicit_label": {
+      "enum": ["MOTION", "PLAN", "GOAL", "AUTHORITY", "UNKNOWN", null]
+    },
+    "inferred_label": {
+      "enum": ["MOTION", "PLAN", "GOAL", "AUTHORITY", "UNKNOWN", null]
+    },
+    "correction_confidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+    "operator_context": {"enum": ["ADJACENT", "ONBOARD", "REMOTE", null]},
+    "robot_assumed_goal": {"type": ["object", "string", "null"]},
+    "objective_weights_before": {"type": ["object", "null"]},
+    "objective_weights_after": {"type": ["object", "null"]}
+  }
+}

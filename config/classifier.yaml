@@ -1,0 +1,27 @@
+event:
+  start_threshold: null  # TODO: candidate range in specification: 0.18-0.20.
+  release_threshold: null  # TODO: candidate range: 0.08-0.10.
+  release_ms: null  # TODO: candidate worksheet value: 150 ms.
+
+classifier:
+  short_ms: null  # TODO: candidate worksheet value: 400 ms.
+  long_ms: null  # TODO: candidate worksheet value: 1000 ms.
+  strong_mag: null  # TODO: candidate worksheet value: 0.75.
+  disagree_deg: null  # TODO: candidate range: 90-120 degrees.
+  repeat_window_ms: null  # TODO: candidate range: 2500-4000 ms.
+  repeated_evidence_count: null  # TODO: define separately from authority repeat limit.
+  branch_radius: null  # TODO: candidate worksheet value: 1.5 m.
+  goal_angle_deg: null  # TODO: candidate range: 30-45 degrees.
+
+# IDs and qualitative rules are preserved from the specification worksheet.
+# Numeric boundaries above must be finalized before implementation.
+rules:
+  H01: {candidate_type: MOTION, enabled: false}
+  H02: {candidate_type: MOTION, enabled: false}
+  H03: {candidate_type: PLAN, enabled: false}
+  H04: {candidate_type: PLAN, enabled: false}
+  H05: {candidate_type: GOAL, enabled: false}
+  H06: {candidate_type: GOAL, enabled: false}
+  H07: {candidate_type: AUTHORITY, enabled: false}
+  H08: {candidate_type: AUTHORITY, enabled: false}
+  H09: {candidate_type: UNKNOWN, enabled: false}

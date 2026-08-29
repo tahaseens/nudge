@@ -1,0 +1,16 @@
+uint8 OPERATOR_ADJACENT=0
+uint8 OPERATOR_ONBOARD=1
+uint8 OPERATOR_REMOTE=2
+
+std_msgs/Header header
+uint8 operator_context
+bool debug_mode
+uint32 intervention_count
+float32 intervention_frequency_hz
+float32 mean_intervention_duration_ms
+float32 mean_intervention_magnitude
+float32 correction_consistency
+float32 response_latency_ms
+float32 autonomy_rejection_rate
+float32 task_success_rate
+float32 preferred_assistance_level

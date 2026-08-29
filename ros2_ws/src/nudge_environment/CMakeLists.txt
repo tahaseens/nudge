@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.16)
+project(nudge_environment VERSION 0.1.0)
+find_package(ament_cmake REQUIRED)
+install(DIRECTORY include/ DESTINATION include)
+ament_package()
